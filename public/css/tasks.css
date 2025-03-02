@@ -1,0 +1,15 @@
+.task-item {
+    display: table;
+    width: 100%;
+}
+.task-item > div {
+    display: table-cell;
+    vertical-align: middle;
+    padding: 10px;
+    border: 1px solid #dee2e6;
+}
+.task-item img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+}

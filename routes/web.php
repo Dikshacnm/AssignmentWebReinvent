@@ -23,9 +23,10 @@ Route::get('/', function () {
 });
 
 Route::controller(TaskController::class)->group(function(){
-            Route::get('all-tasks','getTasks')->name('get.tasks');
+            Route::get('all-tasks','getTasks')->name('get.tasks'); 
+             Route::get('not-completed-tasks','getIncompleteTasks')->name('get.incomplete.tasks');
             Route::post('add-task','addTask')->name('task.add');
-            Route::post('task-complete','updateTask')->name('task.complete');
+            Route::post('complete-task','updateTask')->name('task.complete');
             Route::delete('delete-task/{id}','deleteTask')->name('delete.task');
 });
 

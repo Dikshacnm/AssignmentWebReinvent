@@ -8,10 +8,15 @@ use App\Models\Task;
 class TaskService{
 
 
-    public function index(){
+    public function index($filter = 'all'){
               try{
+                if($filter == 'incomplete'){
+                    $allTasks = Task::where('task_status', 'notcompleted')->orderBy('id', 'desc')->get();
+                }
+                else{
+                    $allTasks = Task::orderBy('id', 'desc')->get();
+                }
                 
-                $allTasks = Task::orderBy('id', 'desc')->get();
                 return $allTasks;
             }
             catch(QueryException $e){

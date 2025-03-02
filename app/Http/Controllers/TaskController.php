@@ -17,7 +17,19 @@ class TaskController extends Controller
     public function getTasks(){
         
         try{
-            $result = $this->taskService->index(); 
+            $result = $this->taskService->index('all'); 
+        
+            return sendSuccessResponse('Tasklist fetched successfully',TaskResource::collection($result),201);
+        }
+        catch(\Exception $e){
+
+            return sendErrorResponse($e->getMessage(),400);
+        }
+    }
+
+    public function getIncompleteTasks(){
+         try{
+            $result = $this->taskService->index('incomplete'); 
         
             return sendSuccessResponse('Tasklist fetched successfully',TaskResource::collection($result),201);
         }
