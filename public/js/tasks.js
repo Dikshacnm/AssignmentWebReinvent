@@ -10,59 +10,99 @@ $(document).ready(function () {
     });
     fetchAllTasks("not_completed");
 
+    /****************************Default Image for Profile************************/
+
+    function resetProfilePicturePreview() {
+        const img = document.getElementById("profile_picture_preview");
+        img.src = "storage/profile_images/profile_picture_default.png";
+    }
+    /****************************Default Image Ends here ************************/
+
+    /****************************Profile Image Preview setting function************************/
+    document
+        .getElementById("profile_picture")
+        .addEventListener("change", function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = document.getElementById(
+                        "profile_picture_preview"
+                    );
+                    img.src = e.target.result;
+                    img.style.display = "block";
+                };
+                reader.readAsDataURL(file);
+            } else {
+                resetProfilePicturePreview();
+            }
+        });
+    /****************************Profile Image Preview setting function ends here**************/
+
+    /****************************Add New Task into the list ************************/
     $("#addTaskButton").click(function () {
         var task = $("#newTask").val();
+        var taskImage = $("#profile_picture")[0].files[0];
         var currentDate = new Date();
         var taskDateTime = currentDate
             .toISOString()
             .slice(0, 19)
             .replace("T", " ");
 
-        //var url = $(this).data("url");
+        var formData = new FormData();
+        formData.append("task_detail", task);
+        formData.append("task_date_time", taskDateTime);
+        if (taskImage) {
+            formData.append("task_created_by", taskImage);
+        }
 
         $.ajax({
             url: "/add-task/",
             type: "POST",
-            data: {
-                task_detail: task,
-                task_date_time: taskDateTime,
-            },
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function (response) {
                 $("#taskError").text("");
                 $(".task-table-body").empty();
+                $("#showAllTasks").prop("checked", false);
 
                 response.data.forEach(function (task) {
                     // console.log(response);
 
+                    var imageUrl = task.task_created_by
+                        ? "storage/profile_images/" + task.task_created_by
+                        : "storage/profile_images/profile_picture_default.png";
                     var newTask = `<tr id="task_${task.id}">
 
-                                        <td>
-                                            <input type="checkbox" id="chk_id_${
-                                                task.id
-                                            }" onclick="handleCheckboxClick(this)" data-id="${
+                                                <td>
+                                                    <input type="checkbox" id="chk_id_${
+                                                        task.id
+                                                    }" onclick="handleTaskCheckboxClick(this)" data-id="${
                         task.id
                     }" ${task.task_status === "completed" ? "checked" : ""}>
-                                        </td>
+                                                </td>
 
-                                        <td>${task.task_detail}</td>
+                                                <td>${
+                                                    task.task_detail
+                                                }&nbsp;&nbsp;<small class="text-muted">${
+                        task.task_date_time
+                    }</small></td>
 
-                                        <td><small class="text-muted">${
-                                            task.task_date_time
-                                        }</small></td>
+                                                <td><img src="${imageUrl}" class="profile-picture" ></td>
 
-                                        <td><img src="" alt="Profile Picture" width="30"></td>
+                                                <td>
+                                                    <button class="btn btn-danger btn-sm" onclick="confirmTaskDelete(${
+                                                        task.id
+                                                    })">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </td>
 
-                                        <td>
-                                            <button class="btn btn-danger btn-sm" onclick="confirmTaskDelete(${
-                                                task.id
-                                            })">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </td>
-
-                                    </tr>`;
+                                            </tr>`;
 
                     $(".task-table-body").append(newTask);
+                    resetProfilePicturePreview();
                 });
             },
             error: function (xhr, status, error) {
@@ -73,16 +113,19 @@ $(document).ready(function () {
             },
         });
     });
+
+    /****************************Add New Task ends here ************************/
 });
 
-function handleCheckboxClick(checkbox) {
+/****************************Mark task Complete on checkbox check ************************/
+function handleTaskCheckboxClick(checkbox) {
     var taskId = $(checkbox).data("id");
     if (checkbox.checked) {
         markTaskComplete(taskId);
     }
 }
 
-//task status update function
+/****************************Task status update on Checkbox check ************************/
 function markTaskComplete(id) {
     $.ajax({
         url: "/complete-task",
@@ -103,7 +146,11 @@ function markTaskComplete(id) {
         },
     });
 }
+/****************************Task status update ends here************************/
 
+/****************************Mark task Complete ends here ************************/
+
+/****************************Get All the tasks on Show All Tasks click and to load tasks by default on page load************************/
 function getAllTasks() {
     if ($("#showAllTasks").is(":checked")) {
         fetchAllTasks("all");
@@ -128,51 +175,55 @@ function fetchAllTasks(filter = "all") {
 
                 response.data.forEach(function (task) {
                     // console.log(response);
-                    if (filter === "not_completed") {
-                        var newTask = `<tr id="task_${task.id}">
 
-                                        <td>
-                                            <input type="checkbox" id="chk_id_${
-                                                task.id
-                                            }" onclick="handleCheckboxClick(this)" data-id="${
+                    if (filter === "not_completed") {
+                        var imageUrl = task.task_created_by
+                            ? "storage/profile_images/" + task.task_created_by
+                            : "storage/profile_images/profile_picture_default.png";
+                        var task = `<tr id="task_${task.id}">
+
+                                                <td>
+                                                    <input type="checkbox" id="chk_id_${
+                                                        task.id
+                                                    }" onclick="handleTaskCheckboxClick(this)" data-id="${
                             task.id
                         }" ${task.task_status === "completed" ? "checked" : ""}>
-                                        </td>
+                                                </td>
 
-                                        <td>${task.task_detail}</td>
+                                                <td>${
+                                                    task.task_detail
+                                                }&nbsp;&nbsp;<small class="text-muted">${
+                            task.task_date_time
+                        }</small></td>
 
-                                        <td><small class="text-muted">${
-                                            task.task_date_time
-                                        }</small></td>
+                                                <td><img src="${imageUrl}" class="profile-picture" ></td>
 
-                                        <td><img src="" alt="Profile Picture" width="30"></td>
+                                                <td>
+                                                    <button class="btn btn-danger btn-sm" onclick="confirmTaskDelete(${
+                                                        task.id
+                                                    })">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </td>
 
-                                        <td>
-                                            <button class="btn btn-danger btn-sm" onclick="confirmTaskDelete(${
-                                                task.id
-                                            })">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </td>
-
-                                    </tr>`;
+                                            </tr>`;
                     } else {
-                        var newTask = `<tr id="task_${task.id}">
+                        var task = `<tr id="task_${task.id}">
 
-                                        <td>${task.task_detail}</td>
+                                                <td>${task.task_detail}</td>
 
-                                        <td>${task.task_status}</td>
+                                                <td>${task.task_status}</td>
 
-                                        <td>
-                                            <button class="btn btn-danger btn-sm" onclick="confirmTaskDelete(${task.id})">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </td>
+                                                <td>
+                                                    <button class="btn btn-danger btn-sm" onclick="confirmTaskDelete(${task.id})">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </td>
 
-                                    </tr>`;
+                                            </tr>`;
                     }
 
-                    $(".task-table-body").append(newTask);
+                    $(".task-table-body").append(task);
                 });
             } else {
                 alert("Error: " + response.message);
@@ -187,6 +238,9 @@ function fetchAllTasks(filter = "all") {
     });
 }
 
+/****************************Get All the tasks ends here*******************************************************************************/
+
+/***********************************Delete Tasks ****************************************/
 function confirmTaskDelete(taskId) {
     Swal.fire({
         title: "Are you sure to delete this task ?",
@@ -222,3 +276,5 @@ function deleteTask(taskId) {
         },
     });
 }
+
+/***********************************Delete Tasks Ends here*******************************/

@@ -28,7 +28,7 @@ class AddTaskRequest extends FormRequest
 
         return [
             'task_detail'=> 'required|string|unique:tasks|max:200',
-            //'task_created_by'=> 'required|string|max:50',
+            'task_created_by'=> 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
             'task_date_time'=> 'nullable|date_format:Y-m-d H:i:s',
         ];
     }

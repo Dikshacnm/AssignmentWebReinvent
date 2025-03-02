@@ -42,9 +42,9 @@ class TaskController extends Controller
     public function addTask(AddTaskRequest $req){
   
         $validatedData = $req->validated();
-      
+
         try{
-            $result = $this->taskService->create($validatedData); 
+            $result = $this->taskService->create($validatedData,$req); 
         
             return sendSuccessResponse('Task added successfully',TaskResource::collection($result),201);
         }
